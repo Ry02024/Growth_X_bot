@@ -1,74 +1,61 @@
-# main.py
+import sys
 import random
-import argparse
-from pathlib import Path
-import config
-from src import llm_handler, x_poster, utils, cluster_generator
+import os
 
+# srcディレクトリをPythonの検索パスに追加
+sys.path.append(os.path.join(os.path.dirname(__file__), 'src'))
 
-def select_theme(clusters: list[dict], post_history: list[dict]) -> dict | None:
-    """
-    投稿するテーマをランダムに選択する。
-    """
-    # TODO: 最近投稿したテーマを避けるなど、より高度な選択ロジックを実装する
-    if not clusters:
-        return None
-    return random.choice(clusters)
+# 作成したモジュールから必要な関数をインポート
+from llm_handler import research_and_generate_content
+from file_handler import load_json, save_knowledge_entry
+from x_poster import post_to_x, trim_to_140_chars
 
+# --- 設定 ---
+TOPIC_SOURCE_FILE = "data/clustered_output.json"
+KNOWLEDGE_BASE_FILE = "data/knowledge_base/knowledge_entries.json"
 
 def main():
     """
-    ボットのメイン処理フロー
+    一連のボット処理を実行するメイン関数
     """
-    parser = argparse.ArgumentParser(description="Growth_X_bot: AI-powered X poster.")
-    parser.add_argument(
-        '--force-recluster',
-        action='store_true',
-        help='Force the clustering process to run, even if a cluster file exists.'
-    )
-    args = parser.parse_args()
+    try:
+        # 1. トピックの選択
+        print("1. トピックを選択しています...")
+        all_topics = load_json(TOPIC_SOURCE_FILE)
+        if not all_topics.get("clusters"):
+            print("エラー: トピックソースに有効なクラスタが見つかりません。")
+            return
+        selected_topic = random.choice(all_topics["clusters"])
+        print(f"   選ばれたテーマ: 「{selected_topic['theme']}」")
 
-    print("--- Starting Growth_X_bot ---")
+        # 2. Web調査とコンテンツ生成
+        print("\n2. Web調査とコンテンツ生成を実行します...")
+        generated_content = research_and_generate_content(selected_topic)
 
-    # 1. 必要であればクラスタリングを実行
-    if not cluster_generator.generate_clusters_if_needed(force_recluster=args.force_recluster):
-        print("--- Growth_X_bot finished (due to clustering issue) ---")
-        return
+        # 3. 知識の蓄積
+        print("\n3. 生成された知識を保存します...")
+        save_knowledge_entry(KNOWLEDGE_BASE_FILE, selected_topic, generated_content)
 
-    # 2. 投稿テーマの選択
-    clusters = utils.load_clusters(config.CLUSTERS_FILE)
-    if not clusters:
-        print("No clusters loaded. Exiting.")
-        print("--- Growth_X_bot finished ---")
-        return
+        # 4. ツイート文の準備と投稿
+        print("\n4. Xへの投稿を準備します...")
+        tweet_text = generated_content.get("tweet")
+        if not tweet_text:
+            print("エラー: 生成されたコンテンツにツイート文が含まれていません。")
+            return
+            
+        final_tweet = trim_to_140_chars(tweet_text)
+        print(f"   投稿するツイート: {final_tweet}")
+        
+        # ユーザーに最終確認
+        if input("   この内容で投稿しますか？ (y/n): ").lower() == 'y':
+            post_to_x(final_tweet)
+        else:
+            print("   投稿はキャンセルされました。")
 
-    post_history = utils.load_post_history(config.POST_HISTORY_FILE)
-    selected_theme = select_theme(clusters, post_history)
+        print("\n✨ 全ての処理が正常に完了しました！")
 
-    if not selected_theme:
-        print("No theme could be selected for posting.")
-        print("--- Growth_X_bot finished ---")
-        return
+    except Exception as e:
+        print(f"\n❌ 処理中にエラーが発生しました: {e}")
 
-    theme_name = selected_theme.get("theme_name", "N/A")
-    theme_summary = selected_theme.get("summary", "")
-    print(f"Selected theme: {theme_name}")
-
-    # 3. ツイート生成、投稿、履歴記録
-    related_info = llm_handler.search_related_information(theme_name, theme_summary)
-    tweet = llm_handler.generate_tweet_text(theme_name, theme_summary, related_info)
-
-    if tweet:
-        print(f"Generated tweet:\n---\n{tweet}\n---")
-        # X (旧Twitter) への投稿を一時的にスキップします。
-        # 実際に投稿するには、以下の2行のコメントアウトを解除してください。
-        print("X (旧Twitter) への投稿は現在スキップされています (Gemini APIのみモード)。")
-        posted_id = None # 投稿していないため、post_idはNoneとします
-        # client = x_poster.get_x_client()
-        # posted_id = x_poster.post_to_x(client, tweet)
-        utils.record_post_history(theme_name, tweet, posted_id, config.POST_HISTORY_FILE)
-
-    print("--- Growth_X_bot finished ---")
-
-if __name__ == '__main__':
+if __name__ == "__main__":
     main()

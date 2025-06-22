@@ -23,7 +23,13 @@ Growth_X_botは、Wordドキュメントなどの知識ベースから自動で�
 ├── LICENSE
 ├── requirements.txt
 ├── src/
-│   └── main.py
+│   ├── __init__.py
+│   ├── __pycache__/
+│   ├── main.py
+│   ├── cluster_document.py
+│   ├── from_docx_import_Document.py
+│   ├── research_topic.py
+│   └── x_poster.py
 ├── data/
 │   ├── knowledge_base/
 │   │   └── 161217-master-Ryo.docx

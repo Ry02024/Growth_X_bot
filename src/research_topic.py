@@ -1,10 +1,14 @@
 # src/cluster_document.py
-import os, re
+import re
 import json
 import random
+import os
 from datetime import datetime
 from google import genai
-from dotenv import load_dotenv
+import sys
+
+sys.path.append(os.path.join(os.path.dirname(__file__), '..'))
+import config
 
 def load_json_file(file_path: str) -> dict:
     """JSONファイルを読み込み、Pythonの辞書として返す。"""
@@ -18,10 +22,7 @@ def research_and_summarize_with_gemini(topic_data: dict):
     """
     指定されたトピックについて、GeminiのGoogle Search機能で調査し、要約を生成する。
     """
-    load_dotenv()
-    api_key = os.getenv("GEMINI_API_KEY")
-    if not api_key:
-        raise ValueError("環境変数にGEMINI_API_KEYが設定されていません。")
+    api_key = config.GEMINI_API_KEY
 
     client = genai.Client(api_key=api_key)
     
@@ -88,8 +89,8 @@ def save_knowledge_as_json(file_path: str, data_to_add: dict):
     print(f"知識データを {file_path} に保存しました。")
     
 if __name__ == "__main__":
-    JSON_FILE_PATH = "../data/clustered_output.json"
-    OUTPUT_JSON_PATH = "../data/knowledge_base/knowledge_entries.json"
+    JSON_FILE_PATH = "./data/clustered_output.json"
+    OUTPUT_JSON_PATH = "./data/knowledge_base/knowledge_entries.json"
 
     try:
         # 1. JSONファイルからクラスタリング結果を読み込む

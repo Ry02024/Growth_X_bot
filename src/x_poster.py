@@ -1,24 +1,18 @@
 # src/x_poster.py
-import os, json
+import json
 import requests
 from requests_oauthlib import OAuth1
-from dotenv import load_dotenv
+import sys
+import os
 
-# このスクリプトファイルの場所を取得
-script_path = os.path.dirname(os.path.abspath(__file__))
-# 一つ上のディレクトリにある.envファイルのフルパスを作成
-dotenv_path = os.path.join(script_path, '..', '.env')
+sys.path.append(os.path.join(os.path.dirname(__file__), '..'))
+import config
 
-load_dotenv(dotenv_path=dotenv_path)
+api_key = config.X_API_KEY
+api_secret = config.X_API_SECRET
+access_token = config.X_ACCESS_TOKEN
+access_token_secret = config.X_ACCESS_TOKEN_SECRET
 
-api_key = os.getenv("X_API_KEY")
-api_secret = os.getenv("X_API_SECRET")
-access_token = os.getenv("X_ACCESS_TOKEN")
-access_token_secret = os.getenv("X_ACCESS_TOKEN_SECRET")
-
-if not all([api_key, api_secret, access_token, access_token_secret]):
-    raise ValueError("XのAPIキーまたはアクセストークンが.envファイルに設定されていません。")
-    
 def trim_to_140_chars(text: str) -> str:
     """テキストをXの投稿制限（ここでは全角140字）に合わせて調整する。"""
     if len(text) <= 140:

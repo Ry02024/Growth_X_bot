@@ -18,7 +18,7 @@ def read_first_text_in_docx(file_path):
             if paragraph.text.strip():
                 print("最初に見つかったテキスト:")
                 print(paragraph.text[:100])
-                return # テキストを見つけたら処理を終了
+                return paragraph.text
 
         print("ドキュメント内にテキストを含む段落が見つかりませんでした。")
         print("原因の可能性: 1. 全て空行である 2. テキストが段落ではなくテキストボックス等に含まれている")

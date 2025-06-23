@@ -3,7 +3,10 @@ import os
 import json
 from docx import Document
 from google import genai
-from dotenv import load_dotenv
+import sys
+
+sys.path.append(os.path.join(os.path.dirname(__file__), '..'))
+import config
 
 def read_text_from_docx(file_path: str) -> str:
     """docxファイルから全てのテキストを抽出し、一つの文字列として結合して返す。"""
@@ -21,11 +24,9 @@ def read_text_from_docx(file_path: str) -> str:
 
 def get_clustered_json_from_gemini(text: str) -> str:
     """与えられたテキストをGemini APIを使ってクラスタリングし、結果をJSON形式の文字列で返す。"""
-    load_dotenv()
-    api_key = os.getenv("GEMINI_API_KEY")
+    api_key = config.GEMINI_API_KEY
     if not api_key:
         raise ValueError("環境変数にGEMINI_API_KEYが設定されていません。")
-
     client = genai.Client(api_key=api_key)
 
     # Geminiへの指示をJSON形式での出力を要求するように変更
@@ -86,8 +87,8 @@ def get_clustered_json_from_gemini(text: str) -> str:
 
 if __name__ == "__main__":
     # 入力ファイルと出力ファイルのパスを定義
-    INPUT_DOCX_PATH = "../data/knowledge_base/161217-master-Ryo.docx"
-    OUTPUT_JSON_PATH = "../data/clustered_output.json"
+    INPUT_DOCX_PATH = "./data/knowledge_base/161217-master-Ryo.docx"
+    OUTPUT_JSON_PATH = "./data/clustered_output.json"
     
     try:
         # 1. docxファイルからテキストを抽出

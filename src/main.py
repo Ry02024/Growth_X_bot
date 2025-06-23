@@ -1,4 +1,7 @@
 # src/main.py
+import os, sys
+sys.path.append(os.path.dirname(__file__))
+
 import from_docx_import_Document
 import cluster_document
 import research_topic
@@ -7,19 +10,32 @@ import json, re, os, random, sys, requests
 from datetime import datetime
 
 #まずはドキュメントからテキストを読み込む
-knowledge_base_path = "../data/knowledge_base/161217-master-Ryo.docx"
+knowledge_base_path = "./data/knowledge_base/161217-master-Ryo.docx"
 read_test = from_docx_import_Document.read_first_text_in_docx(knowledge_base_path)
 # 次にクラスタリングを実行
-clustered_output_path = "../data/clustered_output.json"
+clustered_output_path = "./data/clustered_output.json"
+print(f"クラスタリング前の文章：{read_test}")
 result = cluster_document.get_clustered_json_from_gemini(read_test)
 #テストで出力されたクラスタリング結果を確認
 print("クラスタリング結果:")
 print(result)
+# クラスタリング結果をJSONファイルに保存するためのディレクトリを確認・作成
+json_str = result.strip().lstrip("```json").rstrip("```")
+
+# 4. JSON文字列をPythonの辞書オブジェクトにパース
+with open(clustered_output_path, 'w', encoding='utf-8') as f:
+    json.dump(json.loads(json_str), f, ensure_ascii=False, indent=2)
+print(f"クラスタリング結果を {clustered_output_path} に保存しました。")
+
 # 最後に調査と要約を実行
-research_topic_path = "../data/knowledge_base/knowledge_entries.json"
+research_topic_path = "data/knowledge_base/knowledge_entries.json"
 clustered_data = research_topic.load_json_file(clustered_output_path)
 import random
 selected_topic = random.choice(clustered_data["clusters"])
+print("--- 調査対象トピック ---")
+print(f"ID: {selected_topic['cluster_id']}")
+print(f"テーマ: {selected_topic['theme']}")
+print("------------------------\n")
 research_result = research_topic.research_and_summarize_with_gemini(selected_topic)
 # 調査結果を確認
 print("調査と要約の結果:")
@@ -53,4 +69,4 @@ latest_tweet = x_poster.get_latest_tweet(research_topic_path)
 trimmed_tweet = x_poster.trim_to_140_chars(latest_tweet)
 
 # 3. Xに投稿
-x_poster.post_to_x(trimmed_tweet)
+# x_poster.post_to_x(trimmed_tweet)

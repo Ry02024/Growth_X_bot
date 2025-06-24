@@ -1,6 +1,7 @@
 # src/from_docx_import_Document.py
 from docx import Document
 import os
+import json
 
 def read_first_text_in_docx(file_path):
     """
@@ -25,6 +26,49 @@ def read_first_text_in_docx(file_path):
 
     except Exception as e:
         print(f"ファイルの読み込み中にエラーが発生しました: {e}")
+
+def get_combined_knowledge_text(base_docx_path: str, concepts_path: str) -> str:
+    """
+    base_docx_path: ベースとなるdocxファイルのパス
+    concepts_path: 構造化知識（concepts.jsonなど）のパス
+    1. docxの最初のテキスト
+    2. 構造化知識の要約や要素
+    を結合して返す
+    """
+    texts = []
+    # 1. docxの最初のテキスト
+    if os.path.exists(base_docx_path):
+        try:
+            document = Document(base_docx_path)
+            for paragraph in document.paragraphs:
+                if paragraph.text.strip():
+                    texts.append(paragraph.text.strip())
+                    break
+        except Exception as e:
+            print(f"docx読み込みエラー: {e}")
+    # 2. 構造化知識の要約や要素
+    if os.path.exists(concepts_path):
+        try:
+            with open(concepts_path, 'r', encoding='utf-8') as f:
+                data = json.load(f)
+            # concepts.jsonがリスト形式か単一オブジェクトか両対応
+            if isinstance(data, dict):
+                # 旧: conceptsキーあり
+                if "concepts" in data and isinstance(data["concepts"], list):
+                    for concept in data["concepts"]:
+                        texts.append(concept.get("summary", ""))
+                        if "components" in concept:
+                            texts.extend([str(c) for c in concept["components"]])
+                        texts.append(concept.get("implication", ""))
+                # 新: conceptsキーなし
+                else:
+                    texts.append(data.get("summary", ""))
+                    if "components" in data:
+                        texts.extend([str(c) for c in data["components"]])
+                    texts.append(data.get("implication", ""))
+        except Exception as e:
+            print(f"conceptsファイル読み込みエラー: {e}")
+    return "\n".join([t for t in texts if t])
 
 if __name__ == "__main__":
     # ご自身のファイルパスに修正してください

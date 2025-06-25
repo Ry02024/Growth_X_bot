@@ -24,6 +24,9 @@ class TestNormalCycle(unittest.TestCase):
         # ★★★ 入力ファイル ★★★
         # 概念化テストで生成されたファイルを指定
         bot_main.ACTIVITY_CLUSTERS_PATH = os.path.join(self.test_output_dir, 'test_activity_clusters.json')
+        # 新しい記憶ファイルのパスをテスト用に差し替え
+        bot_main.RECENT_KNOWLEDGE_PATH = os.path.join(self.test_output_dir, 'test_recent_knowledge.json')
+        bot_main.ALL_KNOWLEDGE_LOG_PATH = os.path.join(self.test_output_dir, 'test_all_knowledge_log.json')
         
         # ★★★ 出力ファイル ★★★
         # 通常サイクルの結果（知識記録）の保存先
@@ -52,7 +55,7 @@ class TestNormalCycle(unittest.TestCase):
         
         # テスト開始前のエントリ数を記録
         try:
-            with open(bot_main.KNOWLEDGE_ENTRIES_PATH, 'r', encoding='utf-8') as f:
+            with open(bot_main.RECENT_KNOWLEDGE_PATH, 'r', encoding='utf-8') as f:
                 before = len(json.load(f).get("knowledge_entries", []))
         except (FileNotFoundError, json.JSONDecodeError):
             before = 0
@@ -61,11 +64,11 @@ class TestNormalCycle(unittest.TestCase):
         bot_main.run_normal_cycle()
         
         # --- 検証フェーズ ---
-        # 検証: 知識記録ファイルに1件追加されたか
-        with open(bot_main.KNOWLEDGE_ENTRIES_PATH, 'r', encoding='utf-8') as f:
+        # 検証: 短期記憶ファイルに1件追加されたか
+        with open(bot_main.RECENT_KNOWLEDGE_PATH, 'r', encoding='utf-8') as f:
             after = len(json.load(f).get("knowledge_entries", []))
         self.assertEqual(after, before + 1, "知識エントリが1件追加されていません。")
-        print(f"OK: 知識エントリが{before}→{after}件になりました。")
+        print(f"OK: 短期記憶エントリが{before}→{after}件になりました。")
         
         # 検証3: X投稿関数が1回呼び出されたか
         mock_post_to_x.assert_called_once()

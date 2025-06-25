@@ -96,24 +96,27 @@ def run_conceptualize_cycle():
     print("概念化サイクル完了。")
 
 def main():
+    """このボットのメインコントローラー（1実行1アクションモデル）"""
     print(f"======== ボット処理開始 ({datetime.now()}) ========")
-    print(f"設定: 投稿数が {CONCEPT_GENERATION_THRESHOLD} 回に達したら概念化。")
-    while True:
-        post_count = get_current_post_count()
-        print(f"\n現在の記録済み投稿数: {post_count}")
-        if post_count < CONCEPT_GENERATION_THRESHOLD:
-            print(">>> 通常サイクルを実行します。")
-            run_normal_cycle()
-        else:
-            print(f">>> 投稿数が閾値({CONCEPT_GENERATION_THRESHOLD})に達しました。")
-            run_conceptualize_cycle()
-            # 概念化後に短期記憶をリセット
-            with open(RECENT_KNOWLEDGE_PATH, 'w') as f:
-                 json.dump({"knowledge_entries": []}, f)
-            print("短期記憶（recent_knowledge.json）をリセットしました。")
-            break
-        time.sleep(10) # APIのための短い待機
-    print(f"======== 概念化完了、今回の処理は終了 ({datetime.now()}) ========\n")
+    
+    # 1. 現在の記録済み投稿数を取得
+    post_count = get_current_post_count()
+    print(f"現在の記録済み投稿数: {post_count}")
 
+    # 2. 条件に応じて、どちらか「一つだけ」のサイクルを実行
+    if post_count >= CONCEPT_GENERATION_THRESHOLD:
+        print(f">>> 投稿数が閾値({CONCEPT_GENERATION_THRESHOLD})に達しました。")
+        run_conceptualize_cycle()
+        # 概念化後に短期記憶をリセット
+        with open(RECENT_KNOWLEDGE_PATH, 'w') as f:
+             json.dump({"knowledge_entries": []}, f)
+        print("短期記憶（recent_knowledge.json）をリセットしました。")
+    else:
+        print(">>> 通常サイクルを実行します。")
+        run_normal_cycle()
+        
+    print(f"======== 今回の処理は完了しました ({datetime.now()}) ========\n")
+
+# このファイルが直接実行された時だけmain()を呼び出す
 if __name__ == "__main__":
     main()

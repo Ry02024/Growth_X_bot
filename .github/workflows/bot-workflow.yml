@@ -11,6 +11,8 @@ jobs:
     steps:
       - name: Checkout Repository
         uses: actions/checkout@v4
+        with:
+          persist-credentials: false
 
       - name: Set remote URL to HTTPS
         run: git remote set-url origin https://github.com/Ry02024/Growth_X_bot.git

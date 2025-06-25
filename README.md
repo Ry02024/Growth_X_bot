@@ -1,104 +1,41 @@
-# Growth_X_bot
+![act-logo](https://raw.githubusercontent.com/wiki/nektos/act/img/logo-150.png)
 
-## 概要
+# Overview [![push](https://github.com/nektos/act/workflows/push/badge.svg?branch=master&event=push)](https://github.com/nektos/act/actions) [![Go Report Card](https://goreportcard.com/badge/github.com/nektos/act)](https://goreportcard.com/report/github.com/nektos/act) [![awesome-runners](https://img.shields.io/badge/listed%20on-awesome--runners-blue.svg)](https://github.com/jonico/awesome-runners)
 
-Growth_X_botは、Wordドキュメントなどの知識ベースから自動で情報を抽出・クラスタリングし、要約した内容をX（旧Twitter）へ自動投稿することで、知識共有や情報発信の効率化を図るためのBotです。
+> "Think globally, `act` locally"
 
-- Wordファイルからテキストを自動抽出
-- クラスタリングによる情報整理
-- クラスタごとにリサーチ・要約を自動生成
-- 生成した要約をX（旧Twitter）に自動投稿
+Run your [GitHub Actions](https://developer.github.com/actions/) locally! Why would you want to do this? Two reasons:
 
-## 主な用途
+- **Fast Feedback** - Rather than having to commit/push every time you want to test out the changes you are making to your `.github/workflows/` files (or for any changes to embedded GitHub actions), you can use `act` to run the actions locally. The [environment variables](https://help.github.com/en/actions/configuring-and-managing-workflows/using-environment-variables#default-environment-variables) and [filesystem](https://help.github.com/en/actions/reference/virtual-environments-for-github-hosted-runners#filesystems-on-github-hosted-runners) are all configured to match what GitHub provides.
+- **Local Task Runner** - I love [make](<https://en.wikipedia.org/wiki/Make_(software)>). However, I also hate repeating myself. With `act`, you can use the GitHub Actions defined in your `.github/workflows/` to replace your `Makefile`!
 
-- 社内ナレッジ、研究ノートなどの自動要約・SNS発信
-- ドキュメントから新たな知見をアウトプットとして共有
-- 定期的な情報発信・アウトプットの自動化
+> [!TIP]
+> **Now Manage and Run Act Directly From VS Code!**<br/>
+> Check out the [GitHub Local Actions](https://sanjulaganepola.github.io/github-local-actions-docs/) Visual Studio Code extension which allows you to leverage the power of `act` to run and test workflows locally without leaving your editor.
 
-## ディレクトリ構成例
+# How Does It Work?
 
-```
-.
-├── README.md
-├── LICENSE
-├── requirements.txt
-├── src/
-│   ├── __init__.py
-│   ├── __pycache__/
-│   ├── main.py
-│   ├── cluster_document.py
-│   ├── from_docx_import_Document.py
-│   ├── research_topic.py
-│   └── x_poster.py
-├── data/
-│   ├── knowledge_base/
-│   │   └── 161217-master-Ryo.docx
-│   ├── clustered_output.json
-│   └── knowledge_entries.json
-```
+When you run `act` it reads in your GitHub Actions from `.github/workflows/` and determines the set of actions that need to be run. It uses the Docker API to either pull or build the necessary images, as defined in your workflow files and finally determines the execution path based on the dependencies that were defined. Once it has the execution path, it then uses the Docker API to run containers for each action based on the images prepared earlier. The [environment variables](https://help.github.com/en/actions/configuring-and-managing-workflows/using-environment-variables#default-environment-variables) and [filesystem](https://docs.github.com/en/actions/using-github-hosted-runners/about-github-hosted-runners#file-systems) are all configured to match what GitHub provides.
 
-## セットアップ
+Let's see it in action with a [sample repo](https://github.com/cplee/github-actions-demo)!
 
-### 1. 必要なライブラリのインストール
+![Demo](https://raw.githubusercontent.com/wiki/nektos/act/quickstart/act-quickstart-2.gif)
 
-```bash
-pip install -r requirements.txt
-```
+# Act User Guide
 
-### 2. 必要なファイルの配置
+Please look at the [act user guide](https://nektosact.com) for more documentation.
 
-- `data/knowledge_base/`フォルダ内に解析対象のWordファイル（例：161217-master-Ryo.docx）を配置してください。
+# Support
 
-### 3. X（Twitter）APIの設定
+Need help? Ask in [discussions](https://github.com/nektos/act/discussions)!
 
-- 投稿にはX（Twitter）APIの認証情報が必要です。
-- `python-dotenv`で`.env`ファイルを利用する場合は、各種キーを設定してください。
+# Contributing
 
-### 4. 実行方法
+Want to contribute to act? Awesome! Check out the [contributing guidelines](CONTRIBUTING.md) to get involved.
 
-```bash
-python src/main.py
-```
+## Manually building from source
 
-## 依存パッケージ
-
-- python-dotenv
-- google-genai
-- python-docx
-- requests-oauthlib
-- tweepy
-
-## 注意事項
-
-- Google Gemini APIやX（旧Twitter）APIの認証情報が必要です。各自取得し、環境変数または設定ファイルへセットしてください。
-- 出力先パスやファイル名は適宜main.py内で変更してください。
-
-## ライセンス
-
-This project is licensed under the MIT License.
-
----
-
-```
-MIT License
-
-Copyright (c) 2025 Ry02024
-
-Permission is hereby granted, free of charge, to any person obtaining a copy
-of this software and associated documentation files (the "Software"), to deal
-in the Software without restriction, including without limitation the rights
-to use, copy, modify, merge, publish, distribute, sublicense, and/or sell
-copies of the Software, and to permit persons to whom the Software is
-furnished to do so, subject to the following conditions:
-
-The above copyright notice and this permission notice shall be included in all
-copies or substantial portions of the Software.
-
-THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
-IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
-FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
-AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
-LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
-OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
-SOFTWARE.
-```
+- Install Go tools 1.20+ - (<https://golang.org/doc/install>)
+- Clone this repo `git clone git@github.com:nektos/act.git`
+- Run unit tests with `make test`
+- Build and install: `make install`

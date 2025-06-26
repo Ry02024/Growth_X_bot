@@ -82,8 +82,8 @@ def run_conceptualize_cycle():
     print("ステップA: 新しい高次概念を生成・保存しています...")
     new_concept_data = concept_generator.generate_new_concept(RECENT_KNOWLEDGE_PATH, SUMMARY_MD_PATH, HIGH_LEVEL_CONCEPTS_PATH)
     if not new_concept_data:
-        print("エラー: 高次概念の生成に失敗しました。")
-        return
+        print("エラー: 高次概念の生成に失敗したため、概念化サイクルを中断します。\nエラーが発生したため、処理を異常終了します。")
+        sys.exit(1)
     # ステップB: 全知識の統合と再クラスタリング
     print("ステップB: 新しい活動クラスタを生成しています...")
     knowledge_text = from_docx_import_Document.get_combined_knowledge_text(KNOWLEDGE_BASE_PATH, HIGH_LEVEL_CONCEPTS_PATH)

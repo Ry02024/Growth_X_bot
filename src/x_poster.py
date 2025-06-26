@@ -23,17 +23,25 @@ def trim_to_140_chars(text: str) -> str:
     return text[:140]
 
 def post_to_x(text: str):
-    """指定されたテキストをXに投稿する。"""
+    """指定されたテキストをXに投稿する。APIエラーを堅牢にハンドリングする。"""
     auth = OAuth1(api_key, api_secret, access_token, access_token_secret)
     url = "https://api.twitter.com/2/tweets"
     payload = {"text": text}
-
-    response = requests.post(url, auth=auth, json=payload)
-    if response.status_code != 201:
-        raise Exception(f"Xへの投稿に失敗しました: {response.status_code} {response.text}")
-
-    print(f"✅ Xに投稿しました: {text}")
-
+    try:
+        response = requests.post(url, auth=auth, json=payload)
+        if response.status_code == 429:
+            print("警告: X (Twitter) APIのレート制限に達しました。今回の投稿はスキップします。")
+            return
+        if response.status_code == 403:
+            print(f"警告: 投稿が拒否されました (403 Forbidden): {response.text}")
+            print("ツイート内容が直近のものと重複している可能性があります。")
+            return
+        if response.status_code != 201:
+            raise Exception(f"Xへの投稿に失敗しました: {response.status_code} {response.text}")
+        print(f"✅ Xに投稿しました: {text}")
+    except requests.exceptions.RequestException as e:
+        print(f"エラー: Xへの投稿中に予期せぬエラーが発生しました: {e}")
+        # raise e  # 必要に応じて再スロー
 def run_tests():
     """投稿モジュールの機能をテストする。"""
     print("--- `trim_to_140_chars` 関数のテスト ---")

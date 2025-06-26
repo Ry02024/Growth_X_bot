@@ -5,11 +5,12 @@ from dotenv import load_dotenv
 from google import genai
 import config
 
-def _call_gemini(prompt: str) -> str:
+def _call_gemini(prompt: str) -> str | None:
     """Gemini APIを呼び出し、テキストを生成する共通関数 (research_topic.py方式)"""
     api_key = config.GEMINI_API_KEY
     if not api_key:
-        raise ValueError("環境変数にGEMINI_API_KEYが設定されていません。")
+        print("環境変数にGEMINI_API_KEYが設定されていません。")
+        return None
     client = genai.Client(api_key=api_key)
     # Gemini-proモデルでチャットを作成し、プロンプトを送信
     try:
@@ -18,9 +19,9 @@ def _call_gemini(prompt: str) -> str:
         return response.text
     except Exception as e:
         print(f"Gemini APIとの通信中にエラーが発生しました: {e}")
-        return ""
+        return None
 
-def create_summary_document(knowledge_text: str) -> str:
+def create_summary_document(knowledge_text: str) -> str | None:
     """
     ツイート群から論文形式の要約テキストを生成（背景・目的・方法・結果・課題のフレームワーク）
     """
@@ -55,9 +56,12 @@ def create_summary_document(knowledge_text: str) -> str:
 """
     print("\n[Gemini] 論文形式の要約を生成中...")
     summary = _call_gemini(prompt)
+    if not summary:
+        print("エラー: Geminiによる要約生成に失敗しました。")
+        return None
     return summary
 
-def structure_document_to_json(summary_document: str) -> dict:
+def structure_document_to_json(summary_document: str) -> dict | None:
     """
     論文テキストを構造化JSONに変換
     """
@@ -78,32 +82,43 @@ def structure_document_to_json(summary_document: str) -> dict:
 """
     print("[Gemini] 論文をJSON形式に変換中...")
     json_str = _call_gemini(prompt)
+    if not json_str:
+        print("エラー: GeminiによるJSON変換に失敗しました。")
+        return None
     try:
         clean_json_str = json_str.strip().lstrip("```json").rstrip("```")
         return json.loads(clean_json_str)
     except json.JSONDecodeError:
         print("エラー: Geminiからの出力が有効なJSON形式ではありません。")
-        return {}
+        return None
 
-def generate_new_concept(knowledge_file: str, summary_file: str, concept_file: str) -> dict:
+def generate_new_concept(knowledge_file: str, summary_file: str, concept_file: str) -> dict | None:
     """
     knowledge_file: 入力となるknowledge_entries.jsonのパス
     summary_file: 中間生成物（論文形式テキスト）のパス
     concept_file: 出力するconcepts.jsonのパス
-    戻り値: 生成された概念データ（辞書）
+    戻り値: 生成された概念データ（辞書）またはNone（失敗時）
     """
     with open(knowledge_file, 'r', encoding='utf-8') as f:
         knowledge_data = json.load(f)
     entries = knowledge_data.get('knowledge_entries', [])
+    if not entries:
+        print("警告: 分析対象の知識がありません。")
+        return None
     knowledge_text = "\n".join([
         f"テーマ: {e.get('theme', '')}\nツイート: {e.get('generated_tweet', '')}\n詳細: {e.get('details', '')}"
         for e in entries
     ])
     summary_document = create_summary_document(knowledge_text)
+    if not summary_document:
+        print("エラー: 論文形式の要約生成に失敗しました。")
+        return None
     with open(summary_file, 'w', encoding='utf-8') as f:
         f.write(summary_document)
     concepts_json = structure_document_to_json(summary_document)
+    if not concepts_json:
+        print("エラー: 論文のJSON変換に失敗しました。")
+        return None
     with open(concept_file, 'w', encoding='utf-8') as f:
         json.dump(concepts_json, f, ensure_ascii=False, indent=2)
-    # 生成したJSONデータを返す
     return concepts_json

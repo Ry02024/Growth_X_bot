@@ -1,41 +1,70 @@
-![act-logo](https://raw.githubusercontent.com/wiki/nektos/act/img/logo-150.png)
+# Growth_X_bot
 
-# Overview [![push](https://github.com/nektos/act/workflows/push/badge.svg?branch=master&event=push)](https://github.com/nektos/act/actions) [![Go Report Card](https://goreportcard.com/badge/github.com/nektos/act)](https://goreportcard.com/report/github.com/nektos/act) [![awesome-runners](https://img.shields.io/badge/listed%20on-awesome--runners-blue.svg)](https://github.com/jonico/awesome-runners)
+## 概要
 
-> "Think globally, `act` locally"
+**Growth_X_bot**は、Pythonで構築された**自己成長型のX(旧Twitter)投稿エージェント**です。
+このボットは、与えられた知識ベースから自律的にテーマを発見し、Webで情報を深掘り調査して、質の高いツイートを生成します。
 
-Run your [GitHub Actions](https://developer.github.com/actions/) locally! Why would you want to do this? Two reasons:
+最大の特徴は、単に投稿を繰り返すだけでなく、**自らの活動記録から学び、より高次の新しい概念を構築し、次の活動計画を自ら更新していく「自己成長ループ**を備えている点です。
 
-- **Fast Feedback** - Rather than having to commit/push every time you want to test out the changes you are making to your `.github/workflows/` files (or for any changes to embedded GitHub actions), you can use `act` to run the actions locally. The [environment variables](https://help.github.com/en/actions/configuring-and-managing-workflows/using-environment-variables#default-environment-variables) and [filesystem](https://help.github.com/en/actions/reference/virtual-environments-for-github-hosted-runners#filesystems-on-github-hosted-runners) are all configured to match what GitHub provides.
-- **Local Task Runner** - I love [make](<https://en.wikipedia.org/wiki/Make_(software)>). However, I also hate repeating myself. With `act`, you can use the GitHub Actions defined in your `.github/workflows/` to replace your `Makefile`!
+## 主な機能
 
-> [!TIP]
-> **Now Manage and Run Act Directly From VS Code!**<br/>
-> Check out the [GitHub Local Actions](https://sanjulaganepola.github.io/github-local-actions-docs/) Visual Studio Code extension which allows you to leverage the power of `act` to run and test workflows locally without leaving your editor.
+*   **知識ベースからのテーマ発見**:
+    与えられたドキュメント（DOCX）と、過去の学習で得た「高次概念」を統合し、クラスタリングによって活動すべきテーマを自律的に発見します。
 
-# How Does It Work?
+*   **Web調査と要約**:
+    発見したテーマに基づき、Gemini APIのGoogle Search機能を使ってリアルタイムに情報を収集・分析し、洞察に富んだツイート文を生成します。
 
-When you run `act` it reads in your GitHub Actions from `.github/workflows/` and determines the set of actions that need to be run. It uses the Docker API to either pull or build the necessary images, as defined in your workflow files and finally determines the execution path based on the dependencies that were defined. Once it has the execution path, it then uses the Docker API to run containers for each action based on the images prepared earlier. The [environment variables](https://help.github.com/en/actions/configuring-and-managing-workflows/using-environment-variables#default-environment-variables) and [filesystem](https://docs.github.com/en/actions/using-github-hosted-runners/about-github-hosted-runners#file-systems) are all configured to match what GitHub provides.
+*   **自己成長サイクル**:
+    1.  **実践 (通常サイクル)**: 日々のツイート活動を行い、その記録を「短期記憶」と「長期記憶」に保存します。
+    2.  **学習 (概念化サイクル)**: 短期記憶が一定量に達すると、それまでの活動を統合・分析して「研究報告書」を作成し、新しい「高次概念」を構築します。
+    3.  **再計画**: 新しく得た概念を元に、次の活動の指針となるテーマ（活動クラスタ）を再定義します。
 
-Let's see it in action with a [sample repo](https://github.com/cplee/github-actions-demo)!
+*   **自動実行**:
+    GitHub Actionsとの連携により、サーバーレスで定時実行され、完全な自律稼働を実現します。
 
-![Demo](https://raw.githubusercontent.com/wiki/nektos/act/quickstart/act-quickstart-2.gif)
+## 必要要件
 
-# Act User Guide
+*   Python 3.10以上
+*   必要なパッケージは`requirements.txt`を参照してください。
+*   各種APIキー（Gemini, X API, GitHub PAT）
 
-Please look at the [act user guide](https://nektosact.com) for more documentation.
+## インストール
 
-# Support
+```bash
+git clone https://github.com/Ry02024/Growth_X_bot.git
+cd Growth_X_bot
+pip install -r requirements.txt
+```
 
-Need help? Ask in [discussions](https://github.com/nektos/act/discussions)!
+## 使い方
 
-# Contributing
+### 1. APIキーの設定
 
-Want to contribute to act? Awesome! Check out the [contributing guidelines](CONTRIBUTING.md) to get involved.
+プロジェクトのルートに`.env`ファイルを作成し、以下の内容を記述します。
+（GitHub Actionsで実行する場合は、リポジトリのSecretsに設定します）
 
-## Manually building from source
+```
+GEMINI_API_KEY="YOUR_GEMINI_API_KEY"
+X_API_KEY="YOUR_X_API_KEY"
+X_API_SECRET="YOUR_X_API_SECRET"
+X_ACCESS_TOKEN="YOUR_X_ACCESS_TOKEN"
+X_ACCESS_TOKEN_SECRET="YOUR_X_ACCESS_TOKEN_SECRET"
+```
 
-- Install Go tools 1.20+ - (<https://golang.org/doc/install>)
-- Clone this repo `git clone git@github.com:nektos/act.git`
-- Run unit tests with `make test`
-- Build and install: `make install`
+### 2. ローカルでの実行
+
+以下のコマンドでボットを起動できます。ボットは設定された閾値に達するまで通常サイクルを繰り返し、閾値に達すると概念化サイクルを実行して終了します。
+
+```bash
+python src/main.py
+```
+
+## 開発・コントリビューション
+
+不具合の報告や機能追加の提案はIssuesからお願いします。
+プルリクエストも歓迎します。
+
+## ライセンス
+
+このプロジェクトは[MIT License](LICENSE)の下で公開されています。

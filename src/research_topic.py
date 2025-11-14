@@ -30,7 +30,7 @@ def research_and_summarize_with_gemini(topic_data: dict):
     client = genai.Client(api_key=api_key)
     
     research_model = client.chats.create(
-        model='gemini-2.0-flash-exp',
+        model='gemini-2.5-flash',
         config={'tools': [{'google_search': {}}]}
     )
 
@@ -88,9 +88,6 @@ def research_and_summarize_with_gemini(topic_data: dict):
         except Exception as e:
             # ServerError以外の予期せぬエラーは即座に中断
             raise ConnectionError(f"Gemini APIとの通信中に予期せぬエラーが発生しました: {e}")
-            
-# ★★★ ここまでが変更箇所 ★★★
-
 
 def save_knowledge_as_json(file_path: str, data_to_add: dict):
     """生成された知識をJSONファイルに追記する。"""

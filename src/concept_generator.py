@@ -14,7 +14,7 @@ def _call_gemini(prompt: str) -> str | None:
     client = genai.Client(api_key=api_key)
     # Gemini-proモデルでチャットを作成し、プロンプトを送信
     try:
-        model = client.chats.create(model='gemini-2.0-flash-exp')
+        model = client.chats.create(model='gemini-2.5-flash')
         response = model.send_message(prompt)
         return response.text
     except Exception as e:
@@ -122,3 +122,4 @@ def generate_new_concept(knowledge_file: str, summary_file: str, concept_file: s
     with open(concept_file, 'w', encoding='utf-8') as f:
         json.dump(concepts_json, f, ensure_ascii=False, indent=2)
     return concepts_json
+

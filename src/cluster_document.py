@@ -78,7 +78,7 @@ def get_clustered_json_from_gemini(text: str) -> str:
     print("\nGeminiによるクラスタリングを開始します...")
     try:
         response = client.models.generate_content(
-            model="gemini-2.0-flash",  # gemini-2.0 シリーズ
+            model="gemini-2.5-flash",  # gemini-2.0 シリーズ
             contents=prompt,
         )
         return response.text
